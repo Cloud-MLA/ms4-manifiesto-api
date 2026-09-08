@@ -1,0 +1,13 @@
+# docker-compose solo para desarrollo local del propio MS4.
+# En produccion, este servicio se levanta desde aeropuerto-infra-deploy
+# junto con MS1/MS2/MS3/MS5 detras del balanceador privado.
+
+services:
+  ms4:
+    build: .
+    container_name: ms4-manifiesto-api
+    ports:
+      - "8004:8004"
+    env_file:
+      - .env
+    restart: unless-stopped
