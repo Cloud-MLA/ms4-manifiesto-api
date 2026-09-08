@@ -1,0 +1,157 @@
+openapi: 3.0.3
+info:
+  title: MS4 - Manifiesto de Vuelo
+  version: 0.1.0
+  description: |
+    Microservicio de agregacion sin base de datos. Consolida el vuelo (MS2),
+    pasajeros y equipaje (MS1) y recursos e incidencias (MS3) en una sola
+    respuesta.
+
+    Este archivo es el **contrato de referencia** para el equipo (contract-first,
+    tarea BE-TX-03). La implementacion real vive en `app/` y su OpenAPI corre
+    tiempo se sirve en `/openapi.json`.
+
+servers:
+  - url: https://<api-gateway>/api/manifiesto
+    description: API Gateway (produccion)
+  - url: http://localhost:8000/api/manifiesto
+    description: Local
+
+paths:
+  /manifiesto/{vuelo_id}:
+    get:
+      summary: Manifiesto consolidado del vuelo
+      operationId: getManifiesto
+      parameters:
+        - $ref: '#/components/parameters/VueloId'
+      responses:
+        '200':
+          description: Manifiesto completo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Manifiesto'
+        '404':
+          description: Vuelo no existe en MS2
+        '501':
+          description: No implementado (scaffold)
+
+  /manifiesto/{vuelo_id}/pasajeros:
+    get:
+      summary: Pasajeros del vuelo con ticket + checkin + equipaje
+      operationId: getPasajerosDeVuelo
+      parameters:
+        - $ref: '#/components/parameters/VueloId'
+      responses:
+        '200':
+          description: Lista de pasajeros
+        '404':
+          description: Vuelo no existe
+
+  /manifiesto/{vuelo_id}/resumen:
+    get:
+      summary: Conteos del vuelo
+      operationId: getResumenDeVuelo
+      parameters:
+        - $ref: '#/components/parameters/VueloId'
+      responses:
+        '200':
+          description: Conteos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Resumen'
+
+  /health:
+    get:
+      summary: Estado propio
+      operationId: getHealth
+      responses:
+        '200':
+          description: Servicio operativo
+
+  /health/dependencias:
+    get:
+      summary: Estado de MS1, MS2 y MS3
+      operationId: getHealthDependencias
+      responses:
+        '200':
+          description: Estado agregado + por servicio
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthDependencias'
+
+components:
+  parameters:
+    VueloId:
+      name: vuelo_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+
+  schemas:
+    Manifiesto:
+      type: object
+      properties:
+        vuelo:
+          type: object
+          description: Datos del vuelo desde MS2 (id, num_vuelo, hora_programada, estado, tipo, origen, destino, aeronave, aerolinea)
+        pasajeros:
+          type: array
+          items:
+            type: object
+        tripulacion:
+          type: array
+          items:
+            type: object
+        recursos_asignados:
+          type: array
+          items:
+            type: object
+        incidencias_abiertas:
+          type: array
+          items:
+            type: object
+        warnings:
+          type: array
+          description: Advertencias si alguna dependencia estaba caida (MS4-04)
+          items:
+            type: string
+
+    Resumen:
+      type: object
+      properties:
+        pasajeros_total:
+          type: integer
+        equipaje_kg_total:
+          type: number
+        incidencias_abiertas:
+          type: integer
+
+    HealthDependencias:
+      type: object
+      properties:
+        overall:
+          type: string
+          enum: [up, degraded, down]
+        dependencias:
+          type: object
+          properties:
+            ms1:
+              $ref: '#/components/schemas/HealthEstado'
+            ms2:
+              $ref: '#/components/schemas/HealthEstado'
+            ms3:
+              $ref: '#/components/schemas/HealthEstado'
+
+    HealthEstado:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [up, degraded, down]
+        detail:
+          type: string
