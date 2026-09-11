@@ -1,47 +1,50 @@
-"""Endpoints de manifiesto — stubs.
-
-La implementación real llega en MS4-02 (F1 del plan) cuando MS2 tenga
-`GET /vuelos/{id}/exists` y MS1/MS3 sus endpoints listados en requerimientos §4.
-"""
+"""Endpoints de manifiesto — MS4-02 + MS4-03 + MS4-04 implementados."""
 from fastapi import APIRouter, HTTPException, status
 
+from app.services.manifiesto import (
+    VueloNoExiste,
+    obtener_manifiesto,
+    obtener_pasajeros,
+    obtener_resumen,
+)
+
 router = APIRouter(prefix="/api/manifiesto", tags=["manifiesto"])
-
-
-_STUB_MSG = "MS4-02 pendiente — llegara en F1 cuando MS1/MS2/MS3 expongan sus endpoints"
 
 
 @router.get(
     "/{vuelo_id}",
     summary="Manifiesto consolidado del vuelo",
-    status_code=status.HTTP_501_NOT_IMPLEMENTED,
+    description=(
+        "Agrega vuelo + aeronave + aerolínea (MS2), pasajeros con ticket / "
+        "checkin / equipaje (MS1), tripulación asignada (MS2) y recursos + "
+        "incidencias abiertas (MS3). Si alguna dependencia no responde, el "
+        "campo correspondiente queda vacío y se agrega un mensaje a `warnings[]`."
+    ),
 )
 async def manifiesto(vuelo_id: int) -> dict:
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail={"tarea": "MS4-02", "vuelo_id": vuelo_id, "mensaje": _STUB_MSG},
-    )
+    try:
+        return await obtener_manifiesto(vuelo_id)
+    except VueloNoExiste as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
 
 
 @router.get(
     "/{vuelo_id}/pasajeros",
     summary="Pasajeros del vuelo con ticket + checkin + equipaje",
-    status_code=status.HTTP_501_NOT_IMPLEMENTED,
 )
 async def pasajeros(vuelo_id: int) -> dict:
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail={"tarea": "MS4-03", "vuelo_id": vuelo_id, "mensaje": _STUB_MSG},
-    )
+    try:
+        return await obtener_pasajeros(vuelo_id)
+    except VueloNoExiste as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
 
 
 @router.get(
     "/{vuelo_id}/resumen",
     summary="Conteos: pax, kg equipaje total, incidencias abiertas",
-    status_code=status.HTTP_501_NOT_IMPLEMENTED,
 )
 async def resumen(vuelo_id: int) -> dict:
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail={"tarea": "MS4-03", "vuelo_id": vuelo_id, "mensaje": _STUB_MSG},
-    )
+    try:
+        return await obtener_resumen(vuelo_id)
+    except VueloNoExiste as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))

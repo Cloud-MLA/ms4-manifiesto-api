@@ -1,4 +1,4 @@
-"""Smoke test del scaffold. Corre con: pytest -q"""
+"""Smoke tests del scaffold. Corre con: pytest -q"""
 from fastapi.testclient import TestClient
 
 from app.main import app
@@ -17,9 +17,3 @@ def test_openapi_disponible():
     assert response.status_code == 200
     body = response.json()
     assert body["info"]["title"] == "MS4 — Manifiesto de Vuelo"
-
-
-def test_manifiesto_stub_devuelve_501():
-    response = client.get("/api/manifiesto/1234")
-    assert response.status_code == 501
-    assert response.json()["detail"]["tarea"] == "MS4-02"
