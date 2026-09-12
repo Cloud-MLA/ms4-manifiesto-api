@@ -7,9 +7,11 @@ Contexto y arquitectura: [`cloud-computing-proyecto`](https://github.com/btorole
 Plan de tareas: [`plan/backend.md` §7](https://github.com/btoroled/cloud-computing-proyecto/blob/main/docs/plan/backend.md) ·
 Dueño: Fabricio.
 
-## Estado (MS4-01 ✅)
+## Estado (MS4-01 ✅ · MS4-02 ✅ · MS4-03 ✅ · MS4-04 ✅)
 
-Scaffold operativo: `GET /health` responde y `GET /health/dependencias` chequea MS1/MS2/MS3 en paralelo. Endpoints de manifiesto devuelven `501` (llegan en MS4-02, F1).
+Manifiesto operativo. `GET /health/dependencias` chequea MS1/MS2/MS3 en paralelo. Los 3 endpoints de negocio (`/manifiesto/{id}`, `/pasajeros`, `/resumen`) funcionan contra dependencias reales o contra los mocks incluidos en `mocks/` mientras Guillermo/Mariano/Edinson terminan sus APIs.
+
+Ver [`mocks/README.md`](mocks/README.md) para levantar MS4 + 3 mocks juntos con `docker compose -f mocks/docker-compose.mocks.yml up --build`.
 
 Ya trae (base de plantilla, BE-TX-02): `.editorconfig`, `.github/workflows/build-push-ghcr.yml` (el `.gitignore` de Python ya existía). Fuente: [plantilla común](https://github.com/Cloud-MLA/aeropuerto-infra-deploy/tree/main/plantilla).
 

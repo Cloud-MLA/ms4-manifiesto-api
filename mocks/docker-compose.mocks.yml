@@ -1,0 +1,55 @@
+# Levanta MS4 + los 3 mocks juntos para probar el manifiesto end-to-end
+# sin depender de que Guillermo/Mariano/Edinson terminen.
+#
+# Uso:
+#   docker compose -f mocks/docker-compose.mocks.yml up --build
+#   curl http://localhost:8004/api/manifiesto/6058
+#
+# Cuando existan los servicios reales, este archivo se descarta — MS4 apunta
+# a las IPs de las VM-PROD (variables MS1/2/3_BASE_URL en produccion).
+
+services:
+  ms1-mock:
+    build:
+      context: ..
+      dockerfile: mocks/Dockerfile
+    container_name: ms1-mock
+    command: uvicorn mocks.ms1_mock:app --host 0.0.0.0 --port 8001
+    ports:
+      - "8001:8001"
+
+  ms2-mock:
+    build:
+      context: ..
+      dockerfile: mocks/Dockerfile
+    container_name: ms2-mock
+    command: uvicorn mocks.ms2_mock:app --host 0.0.0.0 --port 8002
+    ports:
+      - "8002:8002"
+
+  ms3-mock:
+    build:
+      context: ..
+      dockerfile: mocks/Dockerfile
+    container_name: ms3-mock
+    command: uvicorn mocks.ms3_mock:app --host 0.0.0.0 --port 8003
+    ports:
+      - "8003:8003"
+
+  ms4:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: ms4-manifiesto-api
+    depends_on:
+      - ms1-mock
+      - ms2-mock
+      - ms3-mock
+    environment:
+      MS1_BASE_URL: http://ms1-mock:8001
+      MS2_BASE_URL: http://ms2-mock:8002
+      MS3_BASE_URL: http://ms3-mock:8003
+      HTTP_TIMEOUT_SECONDS: "3"
+      LOG_LEVEL: info
+    ports:
+      - "8004:8004"
