@@ -13,7 +13,7 @@ logging.basicConfig(
 
 app = FastAPI(
     title="MS4 — Manifiesto de Vuelo",
-    version="0.1.0",
+    version="1.0.0",
     description=(
         "Agrega en una sola respuesta el vuelo (MS2), pasajeros y equipaje (MS1) "
         "y recursos e incidencias (MS3). Este microservicio no tiene base de datos "
