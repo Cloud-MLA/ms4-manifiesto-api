@@ -59,10 +59,22 @@ def _handler_todo_ok(request: httpx.Request) -> httpx.Response:
         return httpx.Response(200, json=_fixture_vuelo(6058))
     if "/tickets" in url and "vuelo_id=6058" in url:
         return httpx.Response(200, json=_fixture_tickets())
-    if "/incidencias" in url and "vuelo_id=6058" in url:
+    # MS3 real (Edinson) ignora los filtros ?vuelo_id= y ?abierta=; devuelve todas.
+    # El cliente MS4 en app/clients/ms3.py filtra localmente.
+    if "/incidencias" in url:
         return httpx.Response(200, json=[
+            # Incidencia abierta afectando al vuelo 6058 — debe pasar el filtro.
             {"id": 1, "gravedad": "Alta", "tipo_incidencia": "Falta_Combustible",
-             "fecha_cierre": None},
+             "fecha_cierre": None,
+             "retrasa_vuelos": [{"vuelo_id": 6058}, {"vuelo_id": 999}]},
+            # Cerrada — el filtro por fecha_cierre None debe descartarla.
+            {"id": 2, "gravedad": "Leve", "tipo_incidencia": "Inundacion",
+             "fecha_cierre": "2026-09-06T03:44:42Z",
+             "retrasa_vuelos": [{"vuelo_id": 6058}]},
+            # Abierta pero no afecta al 6058.
+            {"id": 3, "gravedad": "Moderada", "tipo_incidencia": "Falla_Radar",
+             "fecha_cierre": None,
+             "retrasa_vuelos": [{"vuelo_id": 12345}]},
         ])
     if "/vuelos/99999/exists" in url:
         return httpx.Response(200, json={"exists": False})
