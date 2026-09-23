@@ -13,13 +13,18 @@ _client = HttpClient(
 
 
 class MS1Client:
-    """Métodos que MS4 usa contra MS1."""
+    """Métodos que MS4 usa contra MS1.
+
+    Nota de despliegue: MS1 real (Guillermo, FastAPI) monta los routers en la
+    raíz (`/tickets`, `/pasajeros`, `/categorias-migratorias`). El prefix
+    `/api/pasajeros/` público sólo lo agrega el nginx del API Gateway para
+    llamadas externas; internamente entre servicios (MS4 → MS1 vía nombre de
+    servicio docker) se llama al path sin prefix.
+    """
 
     async def get_tickets_de_vuelo(self, vuelo_id: int) -> list[dict[str, Any]]:
-        """`GET /pasajeros/tickets?vuelo_id={id}` — todos los tickets del vuelo,
-        con pasajero + checkin + equipaje embebidos si el endpoint los devuelve.
-        """
-        response = await _client.get(f"/api/pasajeros/tickets?vuelo_id={vuelo_id}")
+        """`GET /tickets?vuelo_id={id}` — tickets del vuelo desde MS1 real."""
+        response = await _client.get(f"/tickets?vuelo_id={vuelo_id}")
         response.raise_for_status()
         return response.json()
 

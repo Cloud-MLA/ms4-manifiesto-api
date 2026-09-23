@@ -11,6 +11,8 @@ def health():
     return {"status": "up", "service": "ms1-mock"}
 
 
-@app.get("/api/pasajeros/tickets")
+# MS1 real (Guillermo) sirve /tickets en la raíz. El prefix /api/pasajeros/
+# lo agrega el nginx del API Gateway para llamadas externas.
+@app.get("/tickets")
 def get_tickets(vuelo_id: int):
     return tickets(vuelo_id)
