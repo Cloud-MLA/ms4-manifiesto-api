@@ -11,8 +11,9 @@ def health():
     return {"status": "up", "service": "ms1-mock"}
 
 
-# MS1 real (Guillermo) sirve /tickets en la raíz. El prefix /api/pasajeros/
-# lo agrega el nginx del API Gateway para llamadas externas.
-@app.get("/tickets")
+# El cliente MS1 pide `/api/pasajeros/tickets`. En producción, el nginx interno
+# strippea `/api/pasajeros/` antes de reenviar a MS1 real. El mock imita ese
+# comportamiento sirviendo directo en la ruta que MS4 envía.
+@app.get("/api/pasajeros/tickets")
 def get_tickets(vuelo_id: int):
     return tickets(vuelo_id)

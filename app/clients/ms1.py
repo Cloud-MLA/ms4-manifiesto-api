@@ -17,14 +17,18 @@ class MS1Client:
 
     Nota de despliegue: MS1 real (Guillermo, FastAPI) monta los routers en la
     raíz (`/tickets`, `/pasajeros`, `/categorias-migratorias`). El prefix
-    `/api/pasajeros/` público sólo lo agrega el nginx del API Gateway para
-    llamadas externas; internamente entre servicios (MS4 → MS1 vía nombre de
-    servicio docker) se llama al path sin prefix.
+    `/api/pasajeros/` público lo agrega el nginx del API Gateway y también
+    el nginx interno de VM-PROD (ver `aeropuerto-infra-deploy/nginx/nginx.conf`
+    → `location /api/pasajeros/ { proxy_pass http://ms1/; }`).
+
+    Por eso `MS1_BASE_URL` en producción apunta a `http://nginx` (no a
+    `http://ms1:8001` directo) — así el prefix `/api/pasajeros/` se conserva
+    en el path y el nginx lo strippea antes de reenviar a MS1.
     """
 
     async def get_tickets_de_vuelo(self, vuelo_id: int) -> list[dict[str, Any]]:
-        """`GET /tickets?vuelo_id={id}` — tickets del vuelo desde MS1 real."""
-        response = await _client.get(f"/tickets?vuelo_id={vuelo_id}")
+        """`GET /api/pasajeros/tickets?vuelo_id={id}` a través del nginx interno."""
+        response = await _client.get(f"/api/pasajeros/tickets?vuelo_id={vuelo_id}")
         response.raise_for_status()
         return response.json()
 
